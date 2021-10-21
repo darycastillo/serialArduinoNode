@@ -1,8 +1,9 @@
-var SerialPort = require('serialport');
-var Delimiter = require('@serialport/parser-delimiter');
+const SerialPort = require("serialport");
+const Delimiter = require("@serialport/parser-delimiter");
+const yenv = require("yenv");
 
-var port = new SerialPort('/dev/cu.usbmodem14201');
-
-var parser = port.pipe(new Delimiter({ delimiter: '\n' }));
+const env = yenv();
+const port = new SerialPort(env.SERIAL_PORT);git
+const parser = port.pipe(new Delimiter({ delimiter: "\n" }));
 
 module.exports = { parser };
