@@ -1,32 +1,68 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="./css/style.css">
+    <title>Humedad Suelo</title>
+</head>
 
 <body>
+    <h1 style="text-align:center;" class="title">Registro de humedad del suelo</h1>
+    <div style="padding:24px;"><canvas id="grafica" style="margin-top: -24px;"></canvas></div>
 
-    <h1>Control LED light</h1>
-    <p><input type="checkbox" id="light"></p>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.3/socket.io.js"></script>
-    <!-- include socket.io client side script -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.5.1/dist/chart.min.js"></script>
     <script>
-        var socket = io(); //load socket.io-client and connect to the host that serves the page
-        window.addEventListener("load", function () { //when page loads
-            var lightbox = document.getElementById("light");
-            lightbox.addEventListener("change", function () { //add event listener for when checkbox changes
-                socket.emit("light", Number(this.checked)); //send button status to server (as 1 or 0)
+        const socket = io(); //cargar cliente socket.io
+        let counter = 0; // contador del tiempo
+        const ctx = document.getElementById('grafica').getContext('2d');
+        const grafica = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Humedad'],
+                datasets: [{
+                    label: 'Registro humedad suelo',
+                    data: [],
+                    backgroundColor: 'rgba(8, 61, 119)',
+                    fill: true,
+                    borderColor: 'rgb(8, 61, 119)',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        socket.on('humidityValue', function (dataSerial) { //obtener valores por socket, desde el arduino
+            const serialValue = +dataSerial.value
+            grafica.data.labels.push(counter);
+            grafica.data.datasets.forEach(dataset => {
+                dataset.data.push(serialValue);
+                if (serialValue < 5) {
+                    //cambiar color del grafico
+                    dataset.backgroundColor = 'rgb(249, 83, 70)'
+                    dataset.borderColor = 'rgb(249, 83, 70)'
+                    //encender bomba
+
+                } else {
+                    dataset.backgroundColor = 'rgba(8, 61, 119)';
+                    dataset.borderColor = 'rgba(8, 61, 119)';
+                }
             });
+            counter++
+            console.log(grafica.data.datasets)
+            grafica.update();
         });
-        socket.on('light', function (data) { //get button status from client
-            document.getElementById("light").checked = data; //change checkbox according to push button on Raspberry Pi
-            socket.emit("light", data); //send push button status to back to server
-        });
-
-        socket.on('humidityValue', function (data) { //get button status from client
-
-            console.log(data.value); 
-        });
-        
     </script>
+
 
 </body>
 

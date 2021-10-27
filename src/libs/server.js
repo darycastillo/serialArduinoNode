@@ -1,10 +1,12 @@
 const { createServer } = require("http");
 const fs = require("fs");
+const path = require("path");
 
+const file_path = path.join(__dirname, "../public/index.html");
 const httpServer = createServer(handler);
 //disponibilizar pagina html
 function handler(req, res) {
-  fs.readFile("src/public/index.html", function (err, data) {
+  fs.readFile(file_path, function (err, data) {
     //leer html del directorio public
     if (err) {
       res.writeHead(404, { "Content-Type": "text/html" }); //lanzar error 404 si no hay contenido
